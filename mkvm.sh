@@ -20,6 +20,8 @@ syssetup(){
 	sed 's/^c[1-6]/#&/' -i $mountDir/etc/inittab
 	sed '/^#s0/s/#//' -i $mountDir/etc/inittab
 	
+	ln -s /bin/busybox $mountDir/bin/vi
+	
 	msg "removing password from root"
 	sed -i '/root/s/*//' $mountDir/etc/shadow
 	if test -f id_rsa.pub ; then
@@ -52,7 +54,7 @@ EOF
 	echo > $mountDir/etc/conf.d/busybox-ntpd
 	
 	msg fstab
-	echo '/dev/mmcblk0p2	/	btrfs	compress=zstd,subvol=root 0 0' > $mountDir/etc/fstab 
+	echo 'LABEL=vm-root	/	btrfs	compress=zstd,subvol=root 0 0' > $mountDir/etc/fstab 
 
 	#msg sshd prohibit-password
 	#sed -i '/prohibit-password/s/\#//' $mountDir/etc/ssh/sshd_config
@@ -61,7 +63,7 @@ EOF
 	rsync 10.0.6.205::gentoo-etc-portage -a $mountDir/etc/portage/
 	msg "installing basic software"
 	#http_proxy="" PORTAGE_BINHOST="http://gentoo-binhost.lan/packages" ROOT=rootvol PORTAGE_CONFIGROOT=rootvol emerge -bgk -j2 app-emulation/qemu-guest-agent nftables @tools $EXTRA_PACKAGES
-	PORTAGE_BINHOST="http://gentoo-binhost.lan/packages" ROOT=rootvol PORTAGE_CONFIGROOT=rootvol emerge -bgk -j2 app-emulation/qemu-guest-agent nftables @tools $EXTRA_PACKAGES
+	http_proxy="" PORTAGE_BINHOST="http://gentoo-binhost.lan/packages" ROOT=rootvol PORTAGE_CONFIGROOT=rootvol emerge -bgk --keep-going=y -j2 app-emulation/qemu-guest-agent nftables nfs-utils @tools $EXTRA_PACKAGES
 	msg "enabling daemons"
 	msg "enabling cronie"
 	ln -s /etc/init.d/cronie $mountDir/etc/runlevels/default/cronie
@@ -117,6 +119,7 @@ btrfs sub create rootvol
 msg "downloading files"
 msg "downloading stage $CURRENT_STAGE"
 if ! test -f stage3-* ;then
+	#wget -e use_proxy=yes -e http_proxy=${http_proxy} $MIRROR/releases/amd64/autobuilds/$CURRENT_STAGE
 	wget $MIRROR/releases/amd64/autobuilds/$CURRENT_STAGE
 fi
 
