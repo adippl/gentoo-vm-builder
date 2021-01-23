@@ -1,6 +1,7 @@
 #!/bin/sh
 #set -e
 RED='\033[1;31m'
+GREEN='\033[1;32m'
 NC='\033[0m' # No Color
 http_proxy="http-proxy.lan:3142"
 PORTAGE_BINHOST="http://gentoo-binhost.lan/packages"
@@ -8,10 +9,16 @@ NTP="ntp.lan"
 MIRROR="http://mirror.eu.oneandone.net/linux/distributions/gentoo/gentoo"
 CURRENT_STAGE=$(http_proxy="" wget $MIRROR/releases/amd64/autobuilds/latest-stage3-amd64-hardened%2bnomultilib.txt -O - --quiet |awk 'FNR == 3 {print $1}')
 PORTAGE_SNAPSHOT="snapshots/portage-latest.tar.xz"
-mountDir=rootvol
+mountDir="mountDir/root/"
+
+
+enableDaemon_def(){
+	msg "enabling $1 daemon"
+	ln -s /etc/init.d/$1 $mountDir/etc/runlevels/default/$1
+	}
 
 msg(){
-	printf "$RED$1$NC '\n'"
+	printf "$RED$1$NC \n"
 	}
 
 syssetup(){
@@ -32,7 +39,8 @@ syssetup(){
 	
 	msg "setting up eth0"
 	ln -s /etc/init.d/net.lo $mountDir/etc/init.d/net.eth0
-	ln -s /etc/init.d/net.eth0 $mountDir/etc/runlevels/default/net.eth0
+	#ln -s /etc/init.d/net.eth0 $mountDir/etc/runlevels/default/net.eth0
+	enableDaemon_def 'net.eth0'
 	echo 'hostname="gh-vm"' > $mountDir/etc/conf.d/hostname
 	cat << 'EOF' > $mountDir/etc/conf.d/net.eth0
 	config_eth0=dhcp
@@ -45,7 +53,8 @@ EOF
 		fi
 
 	msg "clock and ntpd"
-	ln -s /etc/init.d/busybox-ntpd $mountDir/etc/runlevels/default/busybox-ntpd
+	#ln -s /etc/init.d/busybox-ntpd $mountDir/etc/runlevels/default/busybox-ntpd
+	enableDaemon_def busybox-ntpd
 	unlink $mountDir/etc/runlevels/boot/hwclock
 	msg "copying host timezone config file"
 	cp /etc/timezone $mountDir/etc/timezone
@@ -62,22 +71,28 @@ EOF
 	msg "setting up portage"
 	rsync 10.0.6.205::gentoo-etc-portage -a $mountDir/etc/portage/
 	msg "installing basic software"
-	#http_proxy="" PORTAGE_BINHOST="http://gentoo-binhost.lan/packages" ROOT=rootvol PORTAGE_CONFIGROOT=rootvol emerge -bgk -j2 app-emulation/qemu-guest-agent nftables @tools $EXTRA_PACKAGES
-	http_proxy="" PORTAGE_BINHOST="http://gentoo-binhost.lan/packages" ROOT=rootvol PORTAGE_CONFIGROOT=rootvol emerge -bgk --keep-going=y -j2 app-emulation/qemu-guest-agent nftables nfs-utils @tools $EXTRA_PACKAGES
+	http_proxy="" PORTAGE_BINHOST="http://gentoo-binhost.lan/packages" ROOT=$mountDir PORTAGE_CONFIGROOT=$mountDir emerge -bgk --keep-going=y --with-bdeps=y -j2 app-emulation/qemu-guest-agent nftables nfs-utils @tools
 	msg "enabling daemons"
 	msg "enabling cronie"
-	ln -s /etc/init.d/cronie $mountDir/etc/runlevels/default/cronie
-	msg "enabling sshd"
-	ln -s /etc/init.d/sshd $mountDir/etc/runlevels/default/sshd
+	#ln -s /etc/init.d/cronie $mountDir/etc/runlevels/default/cronie
+	enableDaemon_def cronie
+	
+	#ln -s /etc/init.d/sshd $mountDir/etc/runlevels/default/sshd
+	enableDaemon_def sshd
 	#sg "enabling busybox-ntp"
 	#ln -s /etc/init.d/busybox-ntp $mountDir/etc/runlevels/default/busybox-ntp
-	msg "enabling qemu-guest-agent"
-	ln -s /etc/init.d/qemu-guest-agent $mountDir/etc/runlevels/default/qemu-guest-agent
-	msg "enabling metalog"
-	ln -s /etc/init.d/metalog $mountDir/etc/runlevels/default/metalog
-
-	msg "enabling nftables"
-	ln -s /etc/init.d/nftables $mountDir/etc/runlevels/default/nftables
+	
+	#msg "enabling qemu-guest-agent"
+	#ln -s /etc/init.d/qemu-guest-agent $mountDir/etc/runlevels/default/qemu-guest-agent
+	enableDaemon_def qemu-guest-agent
+	
+	#msg "enabling metalog"
+	#ln -s /etc/init.d/metalog $mountDir/etc/runlevels/default/metalog
+	enableDaemon_def metalog
+	
+	#msg "enabling nftables"
+	#ln -s /etc/init.d/nftables $mountDir/etc/runlevels/default/nftables
+	enableDaemon_def nftables
 	cat <<'EOF' > $mountDir/var/lib/nftables/rules-save
 #!/sbin/nft -f
 flush ruleset
@@ -106,7 +121,7 @@ table inet filter {
 	}
 }
 EOF
-
+	
 	msg "installing update scripts"
 	cp update.sh $mountDir/root/
 	cp aupdate.sh $mountDir/root/
@@ -115,50 +130,64 @@ EOF
 	}
 
 
-btrfs sub create rootvol
-msg "downloading files"
-msg "downloading stage $CURRENT_STAGE"
-if ! test -f stage3-* ;then
-	#wget -e use_proxy=yes -e http_proxy=${http_proxy} $MIRROR/releases/amd64/autobuilds/$CURRENT_STAGE
-	wget $MIRROR/releases/amd64/autobuilds/$CURRENT_STAGE
-fi
-
-msg "downloading portage-latest.tar.xz"
-if ! test -f portage-latest.tar.xz ;then
-	wget $MIRROR/$PORTAGE_SNAPSHOT
-fi
-
-msg "unpacking stage"
-if command -v pv >/dev/null ;then
-#	cat stage3-* |pv -s $(du -b stage3-* |cut -f 1) | tar xpJ --xattrs-include='*.*' --numeric-owner -C mountDir
-	pv stage3-* | tar xpJ --xattrs-include='*.*' --numeric-owner -C rootvol
+if ! test -z SKIPSSETUP ; then
+	
+	if test -f vm.img ;then
+		rm vm.img
+		umount mountDir
+		fi
+	
+	fallocate -l 2G vm.img
+	mkfs.btrfs -f -msingle vm.img
+	mkdir -p mountDir
+	mount vm.img -o compress=zstd,subvolid=0 mountDir
+	btrfs sub create mountDir/snap/
+	btrfs sub create mountDir/root/
+	
+	
+	msg "downloading files"
+	
+	if ! test -f stage3-* ;then
+		msg "downloading stage $CURRENT_STAGE"
+		#wget -e use_proxy=yes -e http_proxy=${http_proxy} $MIRROR/releases/amd64/autobuilds/$CURRENT_STAGE
+		wget $MIRROR/releases/amd64/autobuilds/$CURRENT_STAGE
+	fi
+	
+	if ! test -f portage-latest.tar.xz ;then
+		msg "downloading portage-latest.tar.xz"
+		wget $MIRROR/$PORTAGE_SNAPSHOT
+	fi
+	
+	msg "unpacking stage"
+	if command -v pv >/dev/null ;then
+	#	cat stage3-* |pv -s $(du -b stage3-* |cut -f 1) | tar xpJ --xattrs-include='*.*' --numeric-owner -C mountDir
+		pv stage3-* | tar xpJ --xattrs-include='*.*' --numeric-owner -C $mountDir
+	else
+		tar xpJf stage3-* --xattrs-include='*.*' --numeric-owner -C $mountDir
+	fi
+	
+	msg "unpacking portage"
+	if command -v pv >/dev/null ;then
+		pv portage-latest.tar.xz | tar xpJ --xattrs-include='*.*' --numeric-owner -C $mountDir/usr
+	else
+		tar xpJf portage-latest.tar.xz --xattrs-include='*.*' --numeric-owner -C $mountDir/usr
+		fi
+	
+	syssetup
+	btrfs sub snap -r mountDir/root/ mountDir/snap/root-ssetup
 else
-	tar xpJf stage3-* --xattrs-include='*.*' --numeric-owner -C rootvol
-fi
+	btrfs sub del mountDir/root/
+	btrfs sub snap mountDir/snap/root-ssetup mountDir/root/
+	fi
 
-msg "unpacking portage"
-if command -v pv >/dev/null ;then
-	pv portage-latest.tar.xz | tar xpJ --xattrs-include='*.*' --numeric-owner -C rootvol/usr
-else
-	tar xpJf portage-latest.tar.xz --xattrs-include='*.*' --numeric-owner -C rootvol/usr
-fi
 
-syssetup
+if ! test -z SPECIFICSETUP ; then
+	msg 'special specific setup placeholder'
+	fi
 
-if test -f vm.img ;then
-	rm vm.img
-fi
-fallocate -l 2G vm.img
-mkfs.btrfs -f -msingle vm.img
-mkdir -p mountDir
-mount vm.img -o compress=zstd,subvolid=0 mountDir
-btrfs sub create mountDir/snap/
-btrfs sub snap -r rootvol rootvol-ro
-btrfs send rootvol-ro | pv | btrfs receive mountDir/snap/
-btrfs sub snap mountDir/snap/rootvol-ro mountDir/root/
+
+btrfs sub snap -r mountDir/root mountDir/snap/root-final/
 btrfs sub set-default mountDir/root
 btrfs filesystem label mountDir/ vm-root 
-btrfs sub del rootvol-ro
-btrfs sub del rootvol
 
 umount mountDir
