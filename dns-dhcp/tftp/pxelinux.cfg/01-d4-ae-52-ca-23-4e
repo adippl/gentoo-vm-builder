@@ -1,0 +1,4 @@
+DEFAULT gentoo
+LABEL gentoo
+LINUX /vmlinuz-gentoo-nfsboot
+APPEND initrd=/initramfs-gentoo-nfsboot.img int=eth2 vlan=3 intS=eth0 MELLANOX=1 bondmode=1 root=/dev/nfs nfs=10.0.3.9:/media/nfs/diskless/r210II-2 nfsargs=rw,nolock net.ifnames=0 biosdevname=0 intel_iommu=on

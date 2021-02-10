@@ -1,0 +1,45 @@
+192.168.1.1	gw.vl1.home.lab
+10.0.2.1	gw.vl2.home.lab
+10.0.3.1	gw.vl3.home.lab
+10.0.4.1	gw.vl4.home.lab
+10.0.5.1	gw.vl5.home.lab
+10.0.6.1	gw.vl6.home.lab
+10.0.9.1	gw.vl9.home.lab
+10.0.20.1	gw.vl20.home.lab
+
+10.0.20.11	a.vl20.home.lab
+10.0.20.12	b.vl20.home.lab
+10.0.20.13	c.vl20.home.lab
+
+
+10.0.6.9	r510-1.vl6.home.lab r510-1 gh-ntp gh-nfs
+10.0.6.10	r720-1.cl1.vl6.home.lab
+10.0.6.11	r210II-1.cl1.vl6.home.lab mon-a.ceph.home.lab mds-a.ceph.home.lab r210II-1
+10.0.6.12	r210II-2.cl1.vl6.home.lab mon-b.ceph.home.lab mds-b.ceph.home.lab r210II-2
+10.0.6.13	r210II-3.cl1.vl6.home.lab mon-c.ceph.home.lab mds-c.ceph.home.lab r210II-3
+
+10.0.21.11	r210II-1.cl1.vl20.home.lab coro-1.cluster.home.lab
+10.0.21.12	r210II-2.cl1.vl20.home.lab coro-2.cluster.home.lab
+10.0.21.13	r210II-3.cl1.vl20.home.lab coro-3.cluster.home.lab
+
+10.0.21.11	r210II-1.vl21.home.lab r210II-1.osd.ceph.home.lab
+10.0.21.12	r210II-2.vl21.home.lab r210II-2.osd.ceph.home.lab
+10.0.21.13	r210II-3.vl21.home.lab r210II-3.osd.ceph.home.lab
+
+10.0.6.202	gh-dns.gh.vl6.home.lab	gh-dns
+
+10.0.6.203	gh-portage.vl6.home.lab	gh-portage http-proxy.lan rsync.gentoo.org
+10.0.6.203	portage-proxy.gh.vl6.home.lab	gh-portage-proxy ub-proxy
+10.0.6.205	gh-dev.gh.vl6.home.lab	gh-dev
+10.0.6.206	binhost-http.gh.vl6.home.lab	gh-binhost-http
+10.0.6.220	distcc-1.gh.vl6.home.lab	gh-distcc-1
+10.0.6.221	distcc-2.gh.vl6.home.lab	gh-distcc-2
+10.0.5.213	gh-git.vl6.home.lab	gh-git.home.lab
+10.0.5.214	gh-torrent.vl5.home.lab	gh-torrent
+10.0.5.215	gh-smb-gw.vl5.home.lab	gh-smb-gw
+10.0.5.214	jellyfin.vl5.home.lab	jellyfin
+10.0.6.207	mail.home.lab mail.vl6.home.lab
+10.0.6.225	cephfs-gw.vl6.home.lab cephfs-gw gh-cephfs-gw
+10.0.6.207	cdn.openbsd.org
+10.0.6.206	gentoo-binhost.lan
+10.0.6.9	ntp.lan
