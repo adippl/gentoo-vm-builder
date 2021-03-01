@@ -27,7 +27,7 @@ config_eth0_21="10.0.21.200/24"
 EOF
 	
 	msg "writing dnsmasq config"
-	cat <<'EOF' > $mountDir/dnsmasq.conf
+	cat <<'EOF' > $mountDir/etc/dnsmasq.conf
 no-hosts
 addn-hosts=/etc/dnsmasq.conf.hosts
 no-resolv
@@ -115,17 +115,19 @@ table inet filter {
 		iif != "lo" ip6 daddr ::1 counter drop comment "drop connections to loopback not coming from loopback"
 		ip protocol icmp counter accept comment "accept all ICMP types"
 		ip6 nexthdr ipv6-icmp counter accept comment "accept all ICMP types"
-		tcp dport 22 counter accept comment "accept SSH"
-		tcp dport 53 counter accept comment "accept dnsmasq"
-		udp dport 69 counter accept comment "accept TFTP"
+		ip saddr != 10.0.0.0/8 counter drop comment "drop all outside of lan"
+		tcp dport 22 ip saddr 10.0.0.0/16 counter accept comment "accept SSH"
+		tcp dport 53 ip saddr 10.0.0.0/8 counter accept comment "accept dnsmasq"
+		udp dport 53 ip saddr 10.0.0.0/8 counter accept comment "accept dnsmasq"
+		udp dport 69 ip saddr 10.0.0.0/16 counter accept comment "accept TFTP"
 		counter comment "count dropped packets"
 	}
-	
+
 	chain forward {
 		type filter hook forward priority filter; policy drop;
 		counter comment "count dropped packets"
 	}
-	
+
 	chain output {
 		type filter hook output priority filter; policy accept;
 		counter comment "count accepted packets"
