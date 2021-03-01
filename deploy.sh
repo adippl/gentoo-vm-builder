@@ -1,5 +1,6 @@
 #!/bin/sh
-set -e
+#set -e
+unset +e
 HOST=${HOST:-"test-vm"}
 CPU=${CPU:-"1"}
 MEM=${MEM:-"512"}
@@ -23,17 +24,20 @@ function crmTestRunning(){
 		fi;
 	}
 
-crm resource stop VD_$HOST
-echo "sleeping for 10 sec for guest to shutdown"
-sleep 10
-#if crmTestRunning VD_$HOST; then
-#	while crmTestRunning VD_$HOST; do
-#		echo waiting for resource VD_$HOST to stop
-#		sleep 1
-#		done
-#	echo "sleeping for 10 sec for guest to shutdown"
-#	sleep 10
-#	fi
+if test "$REDEPLOY" = "1" ;then
+	crm resource stop VD_$HOST
+	echo "sleeping for 10 sec for guest to shutdown"
+	sleep 10
+	#if crmTestRunning VD_$HOST; then
+	#	while crmTestRunning VD_$HOST; do
+	#		echo waiting for resource VD_$HOST to stop
+	#		sleep 1
+	#		done
+	#	echo "sleeping for 10 sec for guest to shutdown"
+	#	sleep 10
+	#	fi
+	fi
+
 qemu-img convert -p -f raw -O rbd $HOST.img rbd:$cephPool/$HOST ||\
 	rbd rm $cephPool/$HOST ||\
 	(rbd snap purge $cephPool/$HOST && rbd rm $cephPool/$HOST) &&\

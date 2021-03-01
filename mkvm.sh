@@ -55,7 +55,6 @@ syssetup(){
 	
 	#warn "removing password from root"
 	#sed -i '/root/s/*//' $mountDir/etc/shadow
-	sed -i '/root/s/*//' $mountDir/etc/shadow
 	if test -f id_rsa.pub ; then
 		msg "copying ssh key"
 		mkdir $mountDir/root/.ssh
@@ -220,5 +219,5 @@ if ! test -z "$TEMPL" ; then
 	cp vm.img $TEMPL.img
 	fi
 if test "$DEPLOY" = "1" ;then
-	HOST=$HOST CPU=$CPU MEM=$MEM ./deploy.sh
+	HOST=$HOST CPU=$CPU MEM=$MEM MAC=$MAC NET_BRIDGE=$BRIDGE ./deploy.sh
 	fi

@@ -4,6 +4,7 @@ dir=gh-distcc
 TMPL_VM_IMG_SIZE_GB="4"
 CPU="8"
 MEM="2048"
+BRIDGE="brvl6"
 TEMPLPKGS="sys-devel/distcc"
 DEFPKGS="${DEFPKGS} ${TEMPLPKGS}"
 

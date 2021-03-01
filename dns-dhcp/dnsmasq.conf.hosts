@@ -41,7 +41,7 @@
 10.0.6.203	gh-portage.vl6.home.lab	gh-portage http-proxy.lan rsync.gentoo.org
 10.0.6.203	portage-proxy.gh.vl6.home.lab	gh-portage-proxy ub-proxy
 10.0.6.205	gh-dev.gh.vl6.home.lab	gh-dev
-10.0.6.206	binhost-http.gh.vl6.home.lab	gh-binhost-http
+10.0.6.203	binhost-http.gh.vl6.home.lab	gh-binhost-http
 10.0.6.220	distcc-1.gh.vl6.home.lab	gh-distcc-1
 10.0.6.221	distcc-2.gh.vl6.home.lab	gh-distcc-2
 10.0.5.213	gh-git.vl6.home.lab	git.home.lab
@@ -51,5 +51,5 @@
 10.0.6.207	mail.home.lab mail.vl6.home.lab
 10.0.6.225	cephfs-gw.vl6.home.lab cephfs-gw gh-cephfs-gw
 10.0.6.207	cdn.openbsd.org
-10.0.6.206	gentoo-binhost.lan
+10.0.6.203	gentoo-binhost.lan
 10.0.6.9	ntp.lan
