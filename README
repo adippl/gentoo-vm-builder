@@ -1,0 +1,55 @@
+this is just a backup repo of the scripts I use for building and deployment of Gentoo based Virtual Machines to my mini Virtualisation cluster. 
+
+
+It's not very good and I don't recommend you using it, but it's good enought for me.
+
+all deployment functionality is in deploy.sh scripts, it's designed for my specific KVM/Libvirt/Pacemaker/Ceph 
+
+HOWTO:
+	Build base image:
+		./mksh.sh 
+	backup base image:
+		cp vm.img base.img
+	use one of templates to customize base Image
+	for example gh-docker (simple VM with docker daemon)
+		USE_CACHED=base.img TEMPL=gh-docker ./mksh.sh
+
+	To build and deply with one command use:
+		DEPLOY=1 USE_CACHED=base.img TEMPL=gh-docker ./mksh.sh
+
+to create new template recursively copy directory template
+for ex.:
+	cp -r template My_new_template_name
+now you can customize it in file My_new_template_name/conf.sh
+you can modify some properties variables written in CAPITAL LETTERS
+to add packages in vm add them to TEMPLPKGS (simple space separated lis)
+you can change VM image size with TEMPL_VM_IMG_SIZE_GB, it'll extend default base image if needed.
+Write your custom.. stuff  inside SPEC_SETUP() function
+
+If in doubt, check other existing templates
+
+
+
+
+
+all VM images are created with btrfs filesystem with compression enabled
+default image size is 3GB
+Images don't have UEFI or BIOS booltloaders !!!!
+They are designed for direct kernel boot via QEMU. 
+	(Hypervisor boots kernel and initrd directly from host filesystem.)
+These VMs normally run with my customized kernel config.
+You can try using normal kernels if you know what you're doing.
+
+
+SCRIPTS expect certain files which I didn't commint to this repo
+ex. : public ssh key, nullmailer confguration files, libvirt ceph secred it, etc
+You may have to profide them to for script to work
+
+
+list of template:
+	rt1 - router with nftables (nftables unfinished)
+	gh-portage - gentoo poratage server: lighttpd binpkgs, local portage rsync, apt-cacher-ng basic config and mirrors, let's all HTTPS trafic through 
+	gh-dns - dhcp, tftp and dns server for my lan. It also is responsible for netbooting (nfs booting) few machines real machines
+	gh-distcc - basic vm just for running distccd (distributed c compilation)
+	gh-factorio - factorio game server VM
+

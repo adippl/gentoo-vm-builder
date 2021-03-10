@@ -17,34 +17,22 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-HOST="gh-distcc-1"
-DEFPKGS="${DEFPKGS} app-emulation/docker"
-dir=gh-distcc
-TMPL_VM_IMG_SIZE_GB="4"
-CPU="8"
+HOST="gh-docker"
+dir=$HOST
+TEMPL_VM_IMG_SIZE_GB="10"
+CPU="6"
 MEM="2048"
+MAC="76:6d:00:00:00:12"
 BRIDGE="brvl6"
-TEMPLPKGS="sys-devel/distcc"
+TEMPLPKGS="app-emulation/docker"
 DEFPKGS="${DEFPKGS} ${TEMPLPKGS}"
-
-DISTCCIP=${DISTCCIP:-"10.0.6.220/24"}
 
 SPEC_SETUP(){
 	templBaseConfig
-	msg "configuring static ip $_DISTCCIP on eth0"
-	cat << 'EOF' > $mountDir/etc/conf.d/net
-routes_eth0="default via 10.0.6.1"
-dns_servers_eth0="10.0.6.200"
-EOF
-	echo "config_eth0=\"$_DISTCCIP\"" >> $mountDir/etc/conf.d/net
+	copyGroup docker
+	enableDaemon_def docker
+	mkdir -p $mountDir/var/lib/docker/
+	btrfs subvolume create $mountDir/var/lib/docker/btrfs
 	
-	msg "configuring distcc"
-	sed -i '/allow/d' $mountDir/etc/conf.d/distccd
-	echo "DISTCCD_OPTS=\"\${DISTCCD_OPTS} --allow $DISTCCIP\"" >> $mountDir/etc/conf.d/distccd
-	echo "DISTCCD_OPTS=\"\${DISTCCD_OPTS} --listen 10.0.0.0/16\"" >> $mountDir/etc/conf.d/distccd
-
-	warn "copying distcc user and group from host"
-	copyUserGroup "distcc"
-	
-	enableDaemon_def distccd
 	}
+
