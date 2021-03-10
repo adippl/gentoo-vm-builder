@@ -1,7 +1,6 @@
 HOST="gh-portage"
 dir=$HOST
 VM_IMG_SIZE_GB="30"
-DEFPKGS="${DEFPKGS} net-misc/apt-cacher-ng www-servers/lighttpd"
 CPU="2"
 MEM="512"
 MAC="76:6d:00:00:00:03"

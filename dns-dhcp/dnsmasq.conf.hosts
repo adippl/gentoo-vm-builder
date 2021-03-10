@@ -44,6 +44,7 @@
 10.0.6.203	binhost-http.gh.vl6.home.lab	gh-binhost-http
 10.0.6.220	distcc-1.gh.vl6.home.lab	gh-distcc-1
 10.0.6.221	distcc-2.gh.vl6.home.lab	gh-distcc-2
+10.0.5.212	gh-docker.vl6.home.lab	docker.home.lab	docker.lan
 10.0.5.213	gh-git.vl6.home.lab	git.home.lab
 10.0.5.214	gh-torrent.vl5.home.lab	gh-torrent
 10.0.5.215	gh-smb-gw.vl5.home.lab	gh-smb-gw

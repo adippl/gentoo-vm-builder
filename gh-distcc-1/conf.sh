@@ -8,7 +8,7 @@ BRIDGE="brvl6"
 TEMPLPKGS="sys-devel/distcc"
 DEFPKGS="${DEFPKGS} ${TEMPLPKGS}"
 
-_DISTCCIP=${DISTCCIP:-"10.0.6.220/24"}
+DISTCCIP=${DISTCCIP:-"10.0.6.220/24"}
 
 SPEC_SETUP(){
 	templBaseConfig
@@ -21,8 +21,8 @@ EOF
 	
 	msg "configuring distcc"
 	sed -i '/allow/d' $mountDir/etc/conf.d/distccd
-	echo "DISTCCD_OPTS=\"${DISTCCD_OPTS} --allow $_DISTCCIP\"" >> $mountDir/etc/conf.d/distccd
-	echo "DISTCCD_OPTS=\"${DISTCCD_OPTS} --listen 10.0.0.0/16\"" >> $mountDir/etc/conf.d/distccd
+	echo "DISTCCD_OPTS=\"\${DISTCCD_OPTS} --allow $DISTCCIP\"" >> $mountDir/etc/conf.d/distccd
+	echo "DISTCCD_OPTS=\"\${DISTCCD_OPTS} --listen 10.0.0.0/16\"" >> $mountDir/etc/conf.d/distccd
 
 	warn "copying distcc user and group from host"
 	copyUserGroup "distcc"
